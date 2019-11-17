@@ -37,4 +37,4 @@ kafka-console-producer --broker-list localhost:9092 --topic test1
 ```bash
 kafka-console-consumer --bootstrap-server localhost:9092 --topic test1 --from-beginning
 ```
-![](https://dzh213.oss-cn-beijing.aliyuncs.com/%E5%B1%8F%E5%B9%95%E5%BF%AB%E7%85%A7%202019-11-17%20%E4%B8%8B%E5%8D%881.39.51.png?Expires=1573975466&OSSAccessKeyId=TMP.hg1pX2dWtuw5bVJno5fRtw7t65y1DRcjtTW16KBT5H2z5sYH6rhPQiBLUaCv1dvdhV66EWWz57HZcBYrzwU8eJCJiHvHDDpAwmUSkhKLQUMfvbrJk1zP7CeUtuejMN.tmp&Signature=q7IGR6xdXvBZu1KNcFz44XWzy6A%3D)
+![](https://dzh213.oss-cn-beijing.aliyuncs.com/blog/kafka的生产和消费.png)
