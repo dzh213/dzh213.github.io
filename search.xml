@@ -36,21 +36,20 @@
 </li>
 <li><p>后台运行docker内的nginx</p>
 <figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">docker run --name nginx-test -p 9000:80 -d nginx</span><br></pre></td></tr></table></figure>
-<blockquote>
-<p>–name nginx-test：容器名称。</p>
-</blockquote>
+
 </li>
 </ul>
-<p>-p 9000:80： 端口进行映射，将本地 8080 端口映射到容器内部的 80 端口。<br>-d nginx： 设置容器在在后台一直运行。</p>
 <blockquote>
+<p>–name nginx-test：容器名称。<br>-p 9000:80： 端口进行映射，将本地 8080 端口映射到容器内部的 80 端口。<br>-d nginx： 设置容器在在后台一直运行。</p>
 </blockquote>
 <ul>
 <li>本地浏览器访问<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">localhost:9000</span><br></pre></td></tr></table></figure>
-<h3 id="docker常用命令"><a href="#docker常用命令" class="headerlink" title="docker常用命令"></a>docker常用命令</h3><blockquote>
-<p>下载镜像：<br>docker pull &lt;镜像名:tag&gt;    如：下载centos镜像<br>docker pull centos<br>docker pull sameersbn/redmine:latest<br>查看已下载镜像<br>docker images<br>删除容器<br>docker rm &lt;容器名 or ID&gt;<br>查看容器日志<br>docker logs -f &lt;容器名 or ID&gt;<br>查看正在运行的容器<br>docker ps<br>查看所有的容器，包括已经停止的。<br>docker ps -a<br>删除所有容器<br>docker rm $(docker ps -a -q)<br>停止、启动、杀死指定容器<br>docker start &lt;容器名 or ID&gt; # 启动容器<br>docker stop &lt;容器名 or ID&gt; # 启动容器<br>docker kill &lt;容器名 or ID&gt; # 杀死容器<br>后台运行 docker run -d <Other Parameters><br>docker run -d -p 127.0.0.1:33301:22 centos6-ssh<br>暴露端口： 一共有三种形式进行端口映射<br>docker -p ip:hostPort:containerPort # 映射指定地址的主机端口到容器端口<br>例如：docker -p 127.0.0.1:3306:3306 映射本机3306端口到容器的3306端口<br>docker -p ip::containerPort # 映射指定地址的任意可用端口到容器端口<br>例如：docker -p 127.0.0.1::3306 映射本机的随机可用端口到容器3306端口<br>docer -p hostPort:containerPort # 映射本机的指定端口到容器的指定端口<br>例如：docker -p 3306:3306 # 映射本机的3306端口到容器的3306端口<br>映射数据卷<br>docker -v /home/data:/opt/data # 这里/home/data 指的是宿主机的目录地址，后者则是容器的目录地址</p>
-</blockquote>
+
 </li>
 </ul>
+<h3 id="docker常用命令"><a href="#docker常用命令" class="headerlink" title="docker常用命令"></a>docker常用命令</h3><blockquote>
+<p>下载镜像：<br><code>docker pull</code> &lt;镜像名:tag&gt;    如：下载centos镜像<br><code>docker pull centos</code><br><code>docker pull sameersbn/redmine:latest</code><br>查看已下载镜像<br><code>docker images</code><br>删除容器<br><code>docker rm &lt;容器名 or ID&gt;</code><br>查看容器日志<br><code>docker logs -f &lt;容器名 or ID&gt;</code><br>查看正在运行的容器<br><code>docker ps</code><br>查看所有的容器，包括已经停止的。<br><code>docker ps -a</code><br>删除所有容器<br><code>docker rm $(docker ps -a -q)</code><br>停止、启动、杀死指定容器<br><code>docker start &lt;容器名 or ID&gt;</code> # 启动容器<br><code>docker stop &lt;容器名 or ID&gt;</code> # 启动容器<br><code>docker kill &lt;容器名 or ID&gt;</code> # 杀死容器<br>后台运行 <code>docker run -d &lt;Other Parameters&gt;</code><br><code>docker run -d -p 127.0.0.1:33301:22 centos6-ssh</code><br>暴露端口： 一共有三种形式进行端口映射<br><code>docker -p ip:hostPort:containerPort</code> # 映射指定地址的主机端口到容器端口<br>例如：docker -p 127.0.0.1:3306:3306 映射本机3306端口到容器的3306端口<br><code>docker -p ip::containerPort</code> # 映射指定地址的任意可用端口到容器端口<br>例如：docker -p 127.0.0.1::3306 映射本机的随机可用端口到容器3306端口<br><code>docer -p hostPort:containerPort</code> # 映射本机的指定端口到容器的指定端口<br>例如：docker -p 3306:3306 # 映射本机的3306端口到容器的3306端口<br>映射数据卷<br><code>docker -v /home/data:/opt/data</code> # 这里/home/data 指的是宿主机的目录地址，后者则是容器的目录地址</p>
+</blockquote>
 <p><strong><em>参考</em></strong></p>
 <ol>
 <li><a href="https://www.runoob.com/docker/" target="_blank" rel="noopener">https://www.runoob.com/docker/</a></li>
