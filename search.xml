@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
-    <title>window下docker安装过程.md</title>
+    <title>window下docker安装过程</title>
     <url>/2020/03/03/window%E4%B8%8Bdocker%E5%AE%89%E8%A3%85%E8%BF%87%E7%A8%8B-md/</url>
     <content><![CDATA[<h3 id="一、下载"><a href="#一、下载" class="headerlink" title="一、下载"></a>一、下载</h3><p>进入<a href="https://docker.com" target="_blank" rel="noopener">官网</a> 进行下载对应安装包，如下载缓慢需要代理翻墙。Windows下需在控制面板中开启Hyper。</p>
 <p>安装完毕后命令行下执行 </p>
