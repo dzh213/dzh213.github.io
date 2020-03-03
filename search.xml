@@ -3,39 +3,59 @@
   <entry>
     <title>window下docker安装过程</title>
     <url>/2020/03/03/window%E4%B8%8Bdocker%E5%AE%89%E8%A3%85%E8%BF%87%E7%A8%8B-md/</url>
-    <content><![CDATA[<h3 id="一、下载"><a href="#一、下载" class="headerlink" title="一、下载"></a>一、下载</h3><p>进入<a href="https://docker.com" target="_blank" rel="noopener">官网</a> 进行下载对应安装包，如下载缓慢需要代理翻墙。Windows下需在控制面板中开启Hyper。</p>
+    <content><![CDATA[<h3 id="下载"><a href="#下载" class="headerlink" title="下载"></a>下载</h3><p>进入<a href="https://docker.com" target="_blank" rel="noopener">官网</a> 进行下载对应安装包，如下载缓慢需要代理翻墙。Windows下需在控制面板中开启Hyper。</p>
 <p>安装完毕后命令行下执行 </p>
 <figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">docker --version</span><br></pre></td></tr></table></figure>
 <p>正常显示版本信息，说明安装成功。</p>
-<h3 id="二、修改国内镜像"><a href="#二、修改国内镜像" class="headerlink" title="二、修改国内镜像"></a>二、修改国内镜像</h3><p>Docker for Windows 下可直接点击图标setting，在docker engine中修改registry-mirrors的配置。</p>
-<h3 id="三、运行hello-world"><a href="#三、运行hello-world" class="headerlink" title="三、运行hello world"></a>三、运行hello world</h3><p>在命令行下执行</p>
+<h3 id="修改国内镜像"><a href="#修改国内镜像" class="headerlink" title="修改国内镜像"></a>修改国内镜像</h3><p>Docker for Windows 下可直接点击图标setting，在docker engine中修改registry-mirrors的配置。</p>
+<h3 id="运行hello-world"><a href="#运行hello-world" class="headerlink" title="运行hello world"></a>运行hello world</h3><p>在命令行下执行</p>
 <figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">docker run hello-world</span><br></pre></td></tr></table></figure>
 <p>如下图显示，说明运行成功<br><img src="https://dzh213.oss-cn-beijing.aliyuncs.com/blog/docker%20hello%20world.png" alt=""></p>
 <p>同时，也可以查看当前存在的镜像</p>
 <figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">docker images</span><br></pre></td></tr></table></figure>
 <p><img src="https://dzh213.oss-cn-beijing.aliyuncs.com/blog/docker%20images.png" alt=""></p>
-<h3 id="四、启动docker容器"><a href="#四、启动docker容器" class="headerlink" title="四、启动docker容器"></a>四、启动docker容器</h3><p><strong>1. 启动一个交互式容器</strong></p>
+<h3 id="启动docker容器"><a href="#启动docker容器" class="headerlink" title="启动docker容器"></a>启动docker容器</h3><ul>
+<li><p>启动一个交互式容器</p>
 <figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">docker run -i -t ubuntu:15.10 /bin/bash</span><br></pre></td></tr></table></figure>
-<p>这条命令会先拉取一个ubuntu 15.10版本的镜像，然后在容器内启动该镜像，并进行bash交互。<br><strong>2. 后台运行容器</strong></p>
+<p>这条命令会先拉取一个ubuntu 15.10版本的镜像，然后在容器内启动该镜像，并进行bash交互。</p>
+</li>
+<li><p>后台运行容器</p>
 <figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">docker run -d ubuntu:15.10 /bin/sh -c <span class="string">"while true; do echo hello world; sleep 1; done"</span></span><br></pre></td></tr></table></figure>
 <p>此时，控制台会返回该容器的唯一id，并在后台启动<br>可以通过命令 docker images 查看所有在运行的容器。</p>
-<p>停止容器：</p>
+</li>
+<li><p>停止容器：</p>
 <figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">docker stop &lt;容器id | 容器name&gt;</span><br></pre></td></tr></table></figure>
-<h3 id="五、docker运行nginx"><a href="#五、docker运行nginx" class="headerlink" title="五、docker运行nginx"></a>五、docker运行nginx</h3><p><strong>1. 查看NGINX镜像</strong></p>
+<h3 id="docker运行nginx"><a href="#docker运行nginx" class="headerlink" title="docker运行nginx"></a>docker运行nginx</h3></li>
+<li><p>查看NGINX镜像</p>
 <figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">docker search nginx</span><br></pre></td></tr></table></figure>
-<p><img src="https://dzh213.oss-cn-beijing.aliyuncs.com/blog/docker%20search%20nginx.png" alt=""><br><strong>2. 拉取nginx镜像：</strong></p>
+<p><img src="https://dzh213.oss-cn-beijing.aliyuncs.com/blog/docker%20search%20nginx.png" alt=""></p>
+</li>
+<li><p>拉取nginx镜像</p>
 <figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">docker pull nginx:latest</span><br></pre></td></tr></table></figure>
-<p><img src="https://dzh213.oss-cn-beijing.aliyuncs.com/blog/docker%20pull%20nginx.png" alt=""><br><strong>3. 后台运行docker内的nginx</strong></p>
+<p><img src="https://dzh213.oss-cn-beijing.aliyuncs.com/blog/docker%20pull%20nginx.png" alt=""></p>
+</li>
+<li><p>后台运行docker内的nginx</p>
 <figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">docker run --name nginx-test -p 9000:80 -d nginx</span><br></pre></td></tr></table></figure>
 <blockquote>
-<p>–name nginx-test：容器名称。<br>-p 9000:80： 端口进行映射，将本地 8080 端口映射到容器内部的 80 端口。<br>-d nginx： 设置容器在在后台一直运行。</p>
+<p>–name nginx-test：容器名称。</p>
 </blockquote>
-<p><strong>4. 本地浏览器访问</strong></p>
-<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">localhost:9000</span><br></pre></td></tr></table></figure>
-<h3 id="六、docker常用命令"><a href="#六、docker常用命令" class="headerlink" title="六、docker常用命令"></a>六、docker常用命令</h3><blockquote>
+</li>
+</ul>
+<p>-p 9000:80： 端口进行映射，将本地 8080 端口映射到容器内部的 80 端口。<br>-d nginx： 设置容器在在后台一直运行。</p>
+<blockquote>
+</blockquote>
+<ul>
+<li>本地浏览器访问<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">localhost:9000</span><br></pre></td></tr></table></figure>
+<h3 id="docker常用命令"><a href="#docker常用命令" class="headerlink" title="docker常用命令"></a>docker常用命令</h3><blockquote>
 <p>下载镜像：<br>docker pull &lt;镜像名:tag&gt;    如：下载centos镜像<br>docker pull centos<br>docker pull sameersbn/redmine:latest<br>查看已下载镜像<br>docker images<br>删除容器<br>docker rm &lt;容器名 or ID&gt;<br>查看容器日志<br>docker logs -f &lt;容器名 or ID&gt;<br>查看正在运行的容器<br>docker ps<br>查看所有的容器，包括已经停止的。<br>docker ps -a<br>删除所有容器<br>docker rm $(docker ps -a -q)<br>停止、启动、杀死指定容器<br>docker start &lt;容器名 or ID&gt; # 启动容器<br>docker stop &lt;容器名 or ID&gt; # 启动容器<br>docker kill &lt;容器名 or ID&gt; # 杀死容器<br>后台运行 docker run -d <Other Parameters><br>docker run -d -p 127.0.0.1:33301:22 centos6-ssh<br>暴露端口： 一共有三种形式进行端口映射<br>docker -p ip:hostPort:containerPort # 映射指定地址的主机端口到容器端口<br>例如：docker -p 127.0.0.1:3306:3306 映射本机3306端口到容器的3306端口<br>docker -p ip::containerPort # 映射指定地址的任意可用端口到容器端口<br>例如：docker -p 127.0.0.1::3306 映射本机的随机可用端口到容器3306端口<br>docer -p hostPort:containerPort # 映射本机的指定端口到容器的指定端口<br>例如：docker -p 3306:3306 # 映射本机的3306端口到容器的3306端口<br>映射数据卷<br>docker -v /home/data:/opt/data # 这里/home/data 指的是宿主机的目录地址，后者则是容器的目录地址</p>
 </blockquote>
-<p><em>参考：</em><br><a href="https://www.runoob.com/docker/" target="_blank" rel="noopener">https://www.runoob.com/docker/</a><br><a href="https://www.jianshu.com/p/2dae7b13ce2f" target="_blank" rel="noopener">https://www.jianshu.com/p/2dae7b13ce2f</a></p>
+</li>
+</ul>
+<p><strong><em>参考</em></strong></p>
+<ol>
+<li><a href="https://www.runoob.com/docker/" target="_blank" rel="noopener">https://www.runoob.com/docker/</a></li>
+<li><a href="https://www.jianshu.com/p/2dae7b13ce2f" target="_blank" rel="noopener">https://www.jianshu.com/p/2dae7b13ce2f</a></li>
+</ol>
 ]]></content>
       <categories>
         <category>docker</category>
@@ -47,15 +67,15 @@
   <entry>
     <title>mac搭建kafka</title>
     <url>/2019/11/17/mac%E6%90%AD%E5%BB%BAkafka/</url>
-    <content><![CDATA[<h3 id="一、安装"><a href="#一、安装" class="headerlink" title="一、安装"></a>一、安装</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">brew install kafka</span><br></pre></td></tr></table></figure>
+    <content><![CDATA[<h3 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">brew install kafka</span><br></pre></td></tr></table></figure>
 <p>安装的过程中会自动安装zk</p>
-<h3 id="二、启动zk"><a href="#二、启动zk" class="headerlink" title="二、启动zk"></a>二、启动zk</h3><p>因为我之前单独安装过zk，所以直接启动之前的</p>
+<h3 id="启动zk"><a href="#启动zk" class="headerlink" title="启动zk"></a>启动zk</h3><p>因为我之前单独安装过zk，所以直接启动之前的</p>
 <figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">zkServer start</span><br></pre></td></tr></table></figure>
-<h3 id="三、启动kafka"><a href="#三、启动kafka" class="headerlink" title="三、启动kafka"></a>三、启动kafka</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">brew services start kafka</span><br></pre></td></tr></table></figure>
-<h3 id="四、查看所有的topic"><a href="#四、查看所有的topic" class="headerlink" title="四、查看所有的topic"></a>四、查看所有的topic</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">kafka-topics --list --zookeeper localhost:2181</span><br></pre></td></tr></table></figure>
-<h3 id="五、创建一个名为test1的topic"><a href="#五、创建一个名为test1的topic" class="headerlink" title="五、创建一个名为test1的topic"></a>五、创建一个名为test1的topic</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">kafka-topics --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic test1</span><br></pre></td></tr></table></figure>
-<h3 id="六、使用生产一条消息"><a href="#六、使用生产一条消息" class="headerlink" title="六、使用生产一条消息"></a>六、使用生产一条消息</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">kafka-console-producer --broker-list localhost:9092 --topic test1</span><br></pre></td></tr></table></figure>
-<h3 id="七、消费消息"><a href="#七、消费消息" class="headerlink" title="七、消费消息"></a>七、消费消息</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">kafka-console-consumer --bootstrap-server localhost:9092 --topic test1 --from-beginning</span><br></pre></td></tr></table></figure>
+<h3 id="启动kafka"><a href="#启动kafka" class="headerlink" title="启动kafka"></a>启动kafka</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">brew services start kafka</span><br></pre></td></tr></table></figure>
+<h3 id="查看所有的topic"><a href="#查看所有的topic" class="headerlink" title="查看所有的topic"></a>查看所有的topic</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">kafka-topics --list --zookeeper localhost:2181</span><br></pre></td></tr></table></figure>
+<h3 id="创建一个名为test1的topic"><a href="#创建一个名为test1的topic" class="headerlink" title="创建一个名为test1的topic"></a>创建一个名为test1的topic</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">kafka-topics --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic test1</span><br></pre></td></tr></table></figure>
+<h3 id="使用生产一条消息"><a href="#使用生产一条消息" class="headerlink" title="使用生产一条消息"></a>使用生产一条消息</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">kafka-console-producer --broker-list localhost:9092 --topic test1</span><br></pre></td></tr></table></figure>
+<h3 id="消费消息"><a href="#消费消息" class="headerlink" title="消费消息"></a>消费消息</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">kafka-console-consumer --bootstrap-server localhost:9092 --topic test1 --from-beginning</span><br></pre></td></tr></table></figure>
 <p><img src="https://dzh213.oss-cn-beijing.aliyuncs.com/blog/kafka%E7%9A%84%E7%94%9F%E4%BA%A7%E5%92%8C%E6%B6%88%E8%B4%B9.png" alt=""></p>
 ]]></content>
       <categories>
