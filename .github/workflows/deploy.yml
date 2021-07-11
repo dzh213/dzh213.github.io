@@ -43,7 +43,7 @@ jobs:
         run: |
           yarn install --prefer-offline --frozen-lockfile
       # 从之前设置的 secret 获取部署私钥
-      - name: Set up environment
+      - name: Setup hexo
         env:
           DEPLOY_KEY: ${{ secrets.DEPLOY_KEY }}
         run: |
@@ -52,7 +52,10 @@ jobs:
           echo "$DEPLOY_KEY" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan github.com >> ~/.ssh/known_hosts
+          git config --global user.email "dzh213@163.com"
+          git config --global user.name "donghao"
       # 生成并部署
-      - name: Deploy
+      - name: Hexo deploy
         run: |
-          npx hexo deploy --generate
+          hexo clean
+          hexo d
