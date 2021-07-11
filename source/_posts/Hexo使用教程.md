@@ -58,4 +58,4 @@ hexo clean
 ```
 &nbsp;
 
-***编辑完成后需要将source分支上的markdown源码通过git提交，以免丢失。.***
+***编辑完成后需要将source分支上的markdown源码通过git提交，以免丢失。***
