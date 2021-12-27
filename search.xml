@@ -1,0 +1,260 @@
+<?xml version="1.0" encoding="utf-8"?>
+<search>
+  <entry>
+    <title>三方包间接依赖log4j问题</title>
+    <url>/2021/12/27/%E4%B8%89%E6%96%B9%E5%8C%85%E9%97%B4%E6%8E%A5%E4%BE%9D%E8%B5%96log4j%E9%97%AE%E9%A2%98/</url>
+    <content><![CDATA[<h3 id="问题背景"><a href="#问题背景" class="headerlink" title="问题背景"></a>问题背景</h3><p>项目引入的三方包依赖log4j，导致初始化三方包对象时，代码运行时异常报错，主要是log4j未找到。</p>
+<p>三方包依赖的是log4j 1.*版本的api</p>
+<p>之前项目是springboot 1.4.7 + logback，本身不使用log4j作为日志输出，特意 exclusions 掉了 log4j的依赖，默认兼容会使用 <code>spring-boot-starter-logging</code> 包中的 <code>log4j-over-slf4j</code> </p>
+<p><img src="https://dzh213.oss-cn-beijing.aliyuncs.com/blog/springboot1-log4j%201.jpg" alt="avatar"></p>
+<p>但是随着项目升级到了 springboot 2.2.2 ，es也进行了升级，<code>spring-boot-starter-logging</code> 包中已替换成了logback 作为默认日志框架，<code>log4j-to-slf4j</code> 默认使用log4j2 ,因为不使用，被exclusions掉了，其他三方包间接依赖log4j的地方也都被exclusions。</p>
+<p><img src="https://dzh213.oss-cn-beijing.aliyuncs.com/blog/springboot2-log4j%202.jpg" alt=""></p>
+<h3 id="问题详情"><a href="#问题详情" class="headerlink" title="问题详情"></a>问题详情</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">java.lang.NoClassDefFoundError: org/apache/log4j/Logger</span><br><span class="line">......</span><br><span class="line">Caused by: java.lang.ClassNotFoundException: org.apache.log4j.Logger</span><br></pre></td></tr></table></figure>
+
+<p>这就导致了三方包初始化时找不到log4j的问题。</p>
+<h3 id="解决过程"><a href="#解决过程" class="headerlink" title="解决过程"></a>解决过程</h3><ul>
+<li>主动加入log4j的依赖，引入了 log4j2 的包，运行后依然报错，大概原因是三方包原来使用log4j1版本，高版本无法兼容，而且log4j2中的包名路径也发生了改变。</li>
+<li>引入log4j starter，也不行。springboot2默认使用log4j2版本，以为做了兼容api的逻辑，但是并没有效果。</li>
+<li>引入 <code>log4j-1.2-api</code> 包，再次测试，发现问题解决。后查阅文章，这个包是log4j一个桥接包，兼容log4j老版本的api</li>
+</ul>
+<figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">dependency</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.apache.logging.log4j<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>log4j-1.2-api<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">dependency</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h3><ol>
+<li><a href="https://www.bbsmax.com/A/QV5ZvYG25y/" target="_blank" rel="noopener">spring boot log4j2与三方依赖库log4j冲突无法初始化问题解决方法</a></li>
+<li><a href="https://blog.csdn.net/hadues/article/details/101056724" target="_blank" rel="noopener">关于Log4j 1.x 升级Log4j 2.x 那些事</a></li>
+</ol>
+]]></content>
+      <categories>
+        <category>Java</category>
+      </categories>
+      <tags>
+        <tag>log4j</tag>
+        <tag>maven</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>解决Homebrew安装太慢问题</title>
+    <url>/2021/07/11/%E8%A7%A3%E5%86%B3Homebrew%E5%AE%89%E8%A3%85%E5%A4%AA%E6%85%A2%E9%97%AE%E9%A2%98/</url>
+    <content><![CDATA[<h3 id="介绍"><a href="#介绍" class="headerlink" title="介绍"></a>介绍</h3><p>Homebrew是一款Mac OS平台下的软件包管理工具，拥有安装、卸载、更新、查看、搜索等很多实用的功能。简单的一条指令，就可以实现包管理，而不用你关心各种依赖和文件路径的情况，十分方便快捷。</p>
+<p>本文主要解决问题：Homebrew常规安装太慢；以及通过brew install安装软件太慢，还有时不时的自动updating巨耗时的问题。</p>
+<p>首先安利官网：<a href="https://brew.sh/index_zh-cn" target="_blank" rel="noopener">https://brew.sh/index_zh-cn</a></p>
+<h3 id="使用国内源安装"><a href="#使用国内源安装" class="headerlink" title="使用国内源安装"></a>使用国内源安装</h3><ol>
+<li><p>创建安装目录</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">sudo mkdir /usr/<span class="built_in">local</span>/Homebrew</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>使用中科大源进行git克隆</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">sudo git <span class="built_in">clone</span> https://mirrors.ustc.edu.cn/brew.git /usr/<span class="built_in">local</span>/Homebrew</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>创建一个快捷方式到/usr/local/bin目录</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">sudo ln -s /usr/<span class="built_in">local</span>/Homebrew/bin/brew /usr/<span class="built_in">local</span>/bin/brew</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>创建homebrew-core文件夹，使用中科大源克隆homebrew-core</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">sudo mkdir -p /usr/<span class="built_in">local</span>/Homebrew/Library/Taps/homebrew/homebrew-core</span><br><span class="line"></span><br><span class="line">sudo git <span class="built_in">clone</span> https://mirrors.ustc.edu.cn/homebrew-core.git /usr/<span class="built_in">local</span>/Homebrew/Library/Taps/homebrew/homebrew-core</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>创建<code>homebrew-cask</code>文件夹并使用git克隆</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="built_in">cd</span> <span class="string">"<span class="variable">$(brew --repo)</span>/Library/Taps/homebrew/"</span></span><br><span class="line">mkdir homebrew-cask</span><br><span class="line">git <span class="built_in">clone</span> git://mirrors.ustc.edu.cn/homebrew-cask.git /usr/<span class="built_in">local</span>/Homebrew/Library/Taps/homebrew/homebrew-cask</span><br></pre></td></tr></table></figure>
+
+
+
+</li>
+</ol>
+<ol start="6">
+<li><p>获取权限 并 运行更新</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">sudo chown -R $(whoami) /usr/<span class="built_in">local</span>/Homebrew</span><br><span class="line"></span><br><span class="line">brew update</span><br></pre></td></tr></table></figure>
+
+</li>
+</ol>
+<p>到此，brew相关组件全部安装完成。</p>
+<h3 id="常用命令"><a href="#常用命令" class="headerlink" title="常用命令"></a>常用命令</h3><p>brew 常用命令</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 显示帮助</span></span><br><span class="line">brew –<span class="built_in">help</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 安装软件</span></span><br><span class="line">brew install pandoc</span><br><span class="line"></span><br><span class="line"><span class="comment"># 卸载软件</span></span><br><span class="line">brew uninstall 软件名</span><br><span class="line"></span><br><span class="line"><span class="comment"># 搜索软件</span></span><br><span class="line">brew search git</span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看经安装软件列表</span></span><br><span class="line">brew list</span><br><span class="line"></span><br><span class="line"><span class="comment"># 更新所有软件</span></span><br><span class="line">brew update</span><br><span class="line"></span><br><span class="line"><span class="comment"># 更新某具体软件</span></span><br><span class="line">brew upgrade git</span><br><span class="line"></span><br><span class="line"><span class="comment">#显示软件内容信息</span></span><br><span class="line">brew info git</span><br><span class="line"></span><br><span class="line"><span class="comment"># 查看哪些已安装的程序需要更新</span></span><br><span class="line">brew outdated</span><br></pre></td></tr></table></figure>
+
+<p>cask常用命令，大部分命令与brew命令的使用逻辑相同</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment">#下载软件</span></span><br><span class="line">brew cask install cakebrew</span><br><span class="line"></span><br><span class="line"><span class="comment">#卸载软件</span></span><br><span class="line">brew cask uninstall skitch</span><br></pre></td></tr></table></figure>
+
+
+
+<h3 id="参考文章"><a href="#参考文章" class="headerlink" title="参考文章"></a>参考文章</h3><ol>
+<li><a href="https://xixincan.github.io/2020/05/23/Skill/%E8%A7%A3%E5%86%B3%E5%9B%BD%E5%86%85Homebrew%E5%AE%89%E8%A3%85%E5%A4%AA%E6%85%A2%E9%97%AE%E9%A2%98/" target="_blank" rel="noopener">解决国内Homebrew安装太慢问题</a></li>
+<li><a href="https://blog.csdn.net/m0_46197393/article/details/106752367" target="_blank" rel="noopener">Mac快速安装HomeBrew和HomeBrew-Cask方法</a></li>
+</ol>
+]]></content>
+      <categories>
+        <category>Homebrew</category>
+      </categories>
+      <tags>
+        <tag>Homebrew</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Centos7安装Shadowsocks</title>
+    <url>/2020/03/04/Centos7%E5%AE%89%E8%A3%85shadowsocks/</url>
+    <content><![CDATA[<h3 id="安装pip"><a href="#安装pip" class="headerlink" title="安装pip"></a>安装pip</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">curl <span class="string">"https://bootstrap.pypa.io/get-pip.py"</span> -o <span class="string">"get-pip.py"</span></span><br><span class="line">python get-pip.py</span><br></pre></td></tr></table></figure>
+<h3 id="安装Shadowsocks"><a href="#安装Shadowsocks" class="headerlink" title="安装Shadowsocks"></a>安装Shadowsocks</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">pip install --upgrade pip</span><br><span class="line">pip install shadowsocks</span><br></pre></td></tr></table></figure>
+<p>安装完成后，创建配置文件/etc/shadowsocks.json，内容如下</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">&#123;</span><br><span class="line"><span class="string">"server"</span>:<span class="string">"0.0.0.0"</span>,</span><br><span class="line"><span class="string">"local_address"</span>: <span class="string">"127.0.0.1"</span>,</span><br><span class="line"><span class="string">"local_port"</span>:1080,</span><br><span class="line"><span class="string">"port_password"</span>:&#123;</span><br><span class="line">	<span class="string">"8381"</span>: <span class="string">"D77b73E578"</span>,</span><br><span class="line">	<span class="string">"8382"</span>: <span class="string">"53AFf96aEf"</span>,</span><br><span class="line">	<span class="string">"8383"</span>: <span class="string">"6E18a11eA2"</span>,</span><br><span class="line">	<span class="string">"8384"</span>: <span class="string">"OTU0OWQ2Nz"</span></span><br><span class="line">&#125;,</span><br><span class="line"><span class="string">"timeout"</span>:300,</span><br><span class="line"><span class="string">"method"</span>:<span class="string">"aes-256-cfb"</span>,</span><br><span class="line"><span class="string">"fast_open"</span>: <span class="literal">false</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<h3 id="配置shadowsocks服务启动"><a href="#配置shadowsocks服务启动" class="headerlink" title="配置shadowsocks服务启动"></a>配置shadowsocks服务启动</h3><p>新建</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">vi /etc/systemd/system/shadowsocks.service</span><br></pre></td></tr></table></figure>
+<p>编辑</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">[Unit]</span><br><span class="line">Description=Shadowsocks</span><br><span class="line"></span><br><span class="line">[Service]</span><br><span class="line">TimeoutStartSec=0</span><br><span class="line">ExecStart=/usr/bin/ssserver -c /etc/shadowsocks.json</span><br><span class="line"></span><br><span class="line">[Install]</span><br><span class="line">WantedBy=multi-user.target</span><br></pre></td></tr></table></figure>
+<p>启动 shadowsocks 服务</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">systemctl <span class="built_in">enable</span> shadowsocks</span><br><span class="line">systemctl start shadowsocks</span><br></pre></td></tr></table></figure>
+
+<p>查看启动状态</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">systemctl status shadowsocks</span><br></pre></td></tr></table></figure>
+
+<h3 id="防火墙开放端口"><a href="#防火墙开放端口" class="headerlink" title="防火墙开放端口"></a>防火墙开放端口</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">firewall-cmd --zone=public --add-port=8080/tcp --permanent</span><br><span class="line">firewall-cmd --reload</span><br></pre></td></tr></table></figure>
+<p>如果防火墙FirewallD is not running</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">systemctl start firewalld #开启防火墙</span><br><span class="line">systemctl status firewalld #查看状态</span><br></pre></td></tr></table></figure>
+]]></content>
+      <tags>
+        <tag>Shadowsocks</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>springboot使用docker容器化</title>
+    <url>/2020/03/04/springboot%E4%BD%BF%E7%94%A8docker%E5%AE%B9%E5%99%A8%E5%8C%96/</url>
+    <content><![CDATA[<h3 id="Dockerfile"><a href="#Dockerfile" class="headerlink" title="Dockerfile"></a>Dockerfile</h3><p>在项目目录下/src/main 建立docker目录，建立Dockerfile文件</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line"><span class="comment"># 该镜像需要依赖的基础镜像</span></span><br><span class="line">FROM java:8</span><br><span class="line">ARG workdir=/app</span><br><span class="line"><span class="comment"># VOLUME 指定了临时文件目录为/tmp。</span></span><br><span class="line"><span class="comment"># 其效果是在主机 /var/lib/docker 目录下创建了一个临时文件，并链接到容器的workdir</span></span><br><span class="line">VOLUME <span class="variable">$&#123;workdir&#125;</span></span><br><span class="line"><span class="comment"># 指定工作目录，下面的指令操作将在这个指定目录中执行。当通过交互模式的exec命令进入到该容器时，默认当前路径是/app</span></span><br><span class="line">WORKDIR <span class="variable">$&#123;workdir&#125;</span></span><br><span class="line"><span class="comment"># 将jar包添加到容器中并更名</span></span><br><span class="line">ADD demo.jar app.jar</span><br><span class="line"><span class="comment"># 声明服务运行在8888端口</span></span><br><span class="line">EXPOSE 8888</span><br><span class="line"><span class="comment"># 指定docker容器启动时运行jar包</span></span><br><span class="line">ENTRYPOINT [<span class="string">"sh"</span>,<span class="string">"-c"</span>,<span class="string">"java -Dconfig_user=<span class="variable">$config_user</span> -Dconfig_password=<span class="variable">$config_password</span> -Dplatform_type=<span class="variable">$platform_type</span> -Deureka_uri=<span class="variable">$eureka_uri</span> -Dspring.application.name=<span class="variable">$spring</span>.application.name -jar app.jar"</span>]</span><br><span class="line"><span class="comment"># 指定维护者的名字</span></span><br><span class="line">MAINTAINER donghao</span><br></pre></td></tr></table></figure>
+<p>Java启动脚本中加入shell变量，通过docker 动态参数传递到springboot容器内，用来改变启动的环境。</p>
+<h3 id="添加maven插件"><a href="#添加maven插件" class="headerlink" title="添加maven插件"></a>添加maven插件</h3><figure class="highlight xml"><table><tr><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">build</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">plugins</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">plugin</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.springframework.boot<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>spring-boot-maven-plugin<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">plugin</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">plugin</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>org.apache.maven.plugins<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>maven-surefire-plugin<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">version</span>&gt;</span>2.18.1<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">configuration</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">skipTests</span>&gt;</span>true<span class="tag">&lt;/<span class="name">skipTests</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="name">configuration</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">plugin</span>&gt;</span></span><br><span class="line">        <span class="comment">&lt;!-- Docker maven plugin --&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">plugin</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">groupId</span>&gt;</span>com.spotify<span class="tag">&lt;/<span class="name">groupId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">artifactId</span>&gt;</span>docker-maven-plugin<span class="tag">&lt;/<span class="name">artifactId</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">version</span>&gt;</span>1.0.0<span class="tag">&lt;/<span class="name">version</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">configuration</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">imageName</span>&gt;</span>springboot/$&#123;project.artifactId&#125;<span class="tag">&lt;/<span class="name">imageName</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">dockerDirectory</span>&gt;</span>src/main/docker<span class="tag">&lt;/<span class="name">dockerDirectory</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">resources</span>&gt;</span></span><br><span class="line">                    <span class="tag">&lt;<span class="name">resource</span>&gt;</span></span><br><span class="line">                        <span class="tag">&lt;<span class="name">targetPath</span>&gt;</span>/<span class="tag">&lt;/<span class="name">targetPath</span>&gt;</span></span><br><span class="line">                        <span class="tag">&lt;<span class="name">directory</span>&gt;</span>$&#123;project.build.directory&#125;<span class="tag">&lt;/<span class="name">directory</span>&gt;</span></span><br><span class="line">                        <span class="tag">&lt;<span class="name">include</span>&gt;</span>$&#123;project.build.finalName&#125;.jar<span class="tag">&lt;/<span class="name">include</span>&gt;</span></span><br><span class="line">                    <span class="tag">&lt;/<span class="name">resource</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;/<span class="name">resources</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="name">configuration</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">plugin</span>&gt;</span></span><br><span class="line">        <span class="comment">&lt;!-- Docker maven plugin --&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">plugins</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">build</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<h3 id="构建镜像"><a href="#构建镜像" class="headerlink" title="构建镜像"></a>构建镜像</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">mvn clean package -Dmaven.test.skip=<span class="literal">true</span> docker:build</span><br></pre></td></tr></table></figure>
+<p>执行成功后可以通过<code>docker images</code>查看镜像</p>
+<h3 id="通过docker容器启动springboot"><a href="#通过docker容器启动springboot" class="headerlink" title="通过docker容器启动springboot"></a>通过docker容器启动springboot</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">docker run -e config_user=aaa -e config_password=aaa -e platform_type=dev -e eureka_uri=http://127.0.0.1:8761/eureka/ -e spring.application.name=demo-donghao -p 8888:8888 -v d:\aaa:/app /logs -t springboot/crm-admin</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p>-e 注入启动参数，会传递到springboot中，必须在-p之前<br>-p 端口映射<br>-v 文件挂载,将容器内的日志挂载到本地，方便日志查看<br>-d 后台运行容器，并返回容器ID</p>
+</blockquote>
+<p>可通过<code>docker exec -it &lt;容器name&gt; /bin/bash</code>进入容器。</p>
+<h3 id="遇到的问题"><a href="#遇到的问题" class="headerlink" title="遇到的问题"></a>遇到的问题</h3><ul>
+<li>本地 <code>mvn package docker:build</code> 连接不上docker<br><img src="https://dzh213.oss-cn-beijing.aliyuncs.com/blog/docker%20connect.png" alt=""><br>开放端口<br><img src="https://dzh213.oss-cn-beijing.aliyuncs.com/blog/%E5%BC%80%E6%94%BE2375%E7%AB%AF%E5%8F%A3.png" alt=""></li>
+<li>Dockerfile cannot be Empty<br><img src="https://dzh213.oss-cn-beijing.aliyuncs.com/blog/dockerfile%E4%B8%BA%E7%A9%BA.png" alt=""><br>先吧Dockerfile写完整之后再进行docker build 的过程。</li>
+</ul>
+<p><strong><em>参考</em></strong><br>1.<a href="https://my.oschina.net/thinwonton/blog/2967118" target="_blank" rel="noopener">https://my.oschina.net/thinwonton/blog/2967118</a></p>
+]]></content>
+      <tags>
+        <tag>springboot</tag>
+        <tag>docker</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>window下docker安装过程</title>
+    <url>/2020/03/03/window%E4%B8%8Bdocker%E5%AE%89%E8%A3%85%E8%BF%87%E7%A8%8B-md/</url>
+    <content><![CDATA[<h3 id="下载"><a href="#下载" class="headerlink" title="下载"></a>下载</h3><p>进入<a href="https://docker.com" target="_blank" rel="noopener">官网</a> 进行下载对应安装包，如下载缓慢需要代理翻墙。Windows下需在控制面板中开启Hyper。</p>
+<p>安装完毕后命令行下执行 </p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">docker --version</span><br></pre></td></tr></table></figure>
+<p>正常显示版本信息，说明安装成功。</p>
+<h3 id="修改国内镜像"><a href="#修改国内镜像" class="headerlink" title="修改国内镜像"></a>修改国内镜像</h3><p>Docker for Windows 下可直接点击图标setting，在docker engine中修改registry-mirrors的配置。</p>
+<h3 id="运行hello-world"><a href="#运行hello-world" class="headerlink" title="运行hello world"></a>运行hello world</h3><p>在命令行下执行</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">docker run hello-world</span><br></pre></td></tr></table></figure>
+<p>如下图显示，说明运行成功<br><img src="https://dzh213.oss-cn-beijing.aliyuncs.com/blog/docker%20hello%20world.png" alt=""></p>
+<p>同时，也可以查看当前存在的镜像</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">docker images</span><br></pre></td></tr></table></figure>
+<p><img src="https://dzh213.oss-cn-beijing.aliyuncs.com/blog/docker%20images.png" alt=""></p>
+<h3 id="启动docker容器"><a href="#启动docker容器" class="headerlink" title="启动docker容器"></a>启动docker容器</h3><ul>
+<li><p>启动一个交互式容器</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">docker run -i -t ubuntu:15.10 /bin/bash</span><br></pre></td></tr></table></figure>
+<p>这条命令会先拉取一个ubuntu 15.10版本的镜像，然后在容器内启动该镜像，并进行bash交互。</p>
+</li>
+<li><p>后台运行容器</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">docker run -d ubuntu:15.10 /bin/sh -c <span class="string">"while true; do echo hello world; sleep 1; done"</span></span><br></pre></td></tr></table></figure>
+<p>此时，控制台会返回该容器的唯一id，并在后台启动<br>可以通过命令 docker images 查看所有在运行的容器。</p>
+</li>
+<li><p>停止容器：</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">docker stop &lt;容器id | 容器name&gt;</span><br></pre></td></tr></table></figure>
+<h3 id="docker运行nginx"><a href="#docker运行nginx" class="headerlink" title="docker运行nginx"></a>docker运行nginx</h3></li>
+<li><p>查看NGINX镜像</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">docker search nginx</span><br></pre></td></tr></table></figure>
+<p><img src="https://dzh213.oss-cn-beijing.aliyuncs.com/blog/docker%20search%20nginx.png" alt=""></p>
+</li>
+<li><p>拉取nginx镜像</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">docker pull nginx:latest</span><br></pre></td></tr></table></figure>
+<p><img src="https://dzh213.oss-cn-beijing.aliyuncs.com/blog/docker%20pull%20nginx.png" alt=""></p>
+</li>
+<li><p>后台运行docker内的nginx</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">docker run --name nginx-test -p 9000:80 -d nginx</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<blockquote>
+<p>–name nginx-test：容器名称。<br>-p 9000:80： 端口进行映射，将本地 8080 端口映射到容器内部的 80 端口。<br>-d nginx： 设置容器在在后台一直运行。</p>
+</blockquote>
+<ul>
+<li>本地浏览器访问<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">localhost:9000</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h3 id="docker常用命令"><a href="#docker常用命令" class="headerlink" title="docker常用命令"></a>docker常用命令</h3><blockquote>
+<p>下载镜像：<br><code>docker pull</code> &lt;镜像名:tag&gt;    如：下载centos镜像<br><code>docker pull centos</code><br><code>docker pull sameersbn/redmine:latest</code><br>查看已下载镜像<br><code>docker images</code><br>删除容器<br><code>docker rm &lt;容器名 or ID&gt;</code><br>查看容器日志<br><code>docker logs -f &lt;容器名 or ID&gt;</code><br>查看正在运行的容器<br><code>docker ps</code><br>查看所有的容器，包括已经停止的。<br><code>docker ps -a</code><br>删除所有容器<br><code>docker rm $(docker ps -a -q)</code><br>停止、启动、杀死指定容器<br><code>docker start &lt;容器名 or ID&gt;</code> # 启动容器<br><code>docker stop &lt;容器名 or ID&gt;</code> # 启动容器<br><code>docker kill &lt;容器名 or ID&gt;</code> # 杀死容器<br>后台运行 <code>docker run -d &lt;Other Parameters&gt;</code><br><code>docker run -d -p 127.0.0.1:33301:22 centos6-ssh</code><br>暴露端口： 一共有三种形式进行端口映射<br><code>docker -p ip:hostPort:containerPort</code> # 映射指定地址的主机端口到容器端口<br>例如：docker -p 127.0.0.1:3306:3306 映射本机3306端口到容器的3306端口<br><code>docker -p ip::containerPort</code> # 映射指定地址的任意可用端口到容器端口<br>例如：docker -p 127.0.0.1::3306 映射本机的随机可用端口到容器3306端口<br><code>docer -p hostPort:containerPort</code> # 映射本机的指定端口到容器的指定端口<br>例如：docker -p 3306:3306 # 映射本机的3306端口到容器的3306端口<br>映射数据卷<br><code>docker -v /home/data:/opt/data</code> # 这里/home/data 指的是宿主机的目录地址，后者则是容器的目录地址</p>
+</blockquote>
+<p><strong><em>参考</em></strong></p>
+<ol>
+<li><a href="https://www.runoob.com/docker/" target="_blank" rel="noopener">https://www.runoob.com/docker/</a></li>
+<li><a href="https://www.jianshu.com/p/2dae7b13ce2f" target="_blank" rel="noopener">https://www.jianshu.com/p/2dae7b13ce2f</a></li>
+</ol>
+]]></content>
+      <categories>
+        <category>docker</category>
+      </categories>
+      <tags>
+        <tag>docker</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>mac搭建kafka</title>
+    <url>/2019/11/17/mac%E6%90%AD%E5%BB%BAkafka/</url>
+    <content><![CDATA[<h3 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">brew install kafka</span><br></pre></td></tr></table></figure>
+<p>安装的过程中会自动安装zk</p>
+<h3 id="启动zk"><a href="#启动zk" class="headerlink" title="启动zk"></a>启动zk</h3><p>因为我之前单独安装过zk，所以直接启动之前的</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">zkServer start</span><br></pre></td></tr></table></figure>
+<h3 id="启动kafka"><a href="#启动kafka" class="headerlink" title="启动kafka"></a>启动kafka</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">brew services start kafka</span><br></pre></td></tr></table></figure>
+<h3 id="查看所有的topic"><a href="#查看所有的topic" class="headerlink" title="查看所有的topic"></a>查看所有的topic</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">kafka-topics --list --zookeeper localhost:2181</span><br></pre></td></tr></table></figure>
+<h3 id="创建一个名为test1的topic"><a href="#创建一个名为test1的topic" class="headerlink" title="创建一个名为test1的topic"></a>创建一个名为test1的topic</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">kafka-topics --create --zookeeper localhost:2181 --replication-factor 1 --partitions 1 --topic test1</span><br></pre></td></tr></table></figure>
+<h3 id="使用生产一条消息"><a href="#使用生产一条消息" class="headerlink" title="使用生产一条消息"></a>使用生产一条消息</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">kafka-console-producer --broker-list localhost:9092 --topic test1</span><br></pre></td></tr></table></figure>
+<h3 id="消费消息"><a href="#消费消息" class="headerlink" title="消费消息"></a>消费消息</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">kafka-console-consumer --bootstrap-server localhost:9092 --topic test1 --from-beginning</span><br></pre></td></tr></table></figure>
+<p><img src="https://dzh213.oss-cn-beijing.aliyuncs.com/blog/kafka%E7%9A%84%E7%94%9F%E4%BA%A7%E5%92%8C%E6%B6%88%E8%B4%B9.png" alt=""></p>
+]]></content>
+      <categories>
+        <category>kafka</category>
+      </categories>
+      <tags>
+        <tag>kafka</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Hexo使用教程</title>
+    <url>/2019/11/16/Hexo%E4%BD%BF%E7%94%A8%E6%95%99%E7%A8%8B/</url>
+    <content><![CDATA[<h3 id="分支情况"><a href="#分支情况" class="headerlink" title="分支情况"></a>分支情况</h3><ul>
+<li>master hexo生成的静态文件</li>
+<li>source markdown源码</li>
+</ul>
+<h3 id="拉取代码"><a href="#拉取代码" class="headerlink" title="拉取代码"></a>拉取代码</h3><figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">https://github.com/dzh213/dzh213.github.io.git</span><br></pre></td></tr></table></figure>
+<h3 id="环境安装"><a href="#环境安装" class="headerlink" title="环境安装"></a>环境安装</h3><p><strong>切换到source分支</strong><br><strong>全局安装Hexo(前提已安装node)</strong></p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">npm install -g hexo-cli</span><br></pre></td></tr></table></figure>
+<p><strong>安装相关依赖</strong><br>相关依赖已写入了package.json中，直接安装即可。</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">npm i</span><br></pre></td></tr></table></figure>
+<h3 id="Hexo-命令使用"><a href="#Hexo-命令使用" class="headerlink" title="Hexo 命令使用"></a>Hexo 命令使用</h3><p><strong>创建一篇文章</strong></p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">hexo new <span class="string">"demo"</span></span><br></pre></td></tr></table></figure>
+<p><strong>生成静态文件</strong></p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">hexo generate</span><br></pre></td></tr></table></figure>
+<p>可简写成</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">hexo g</span><br></pre></td></tr></table></figure>
+<p><strong>本地部署预览</strong></p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">hexo server</span><br></pre></td></tr></table></figure>
+<p><strong>将静态文件部署到github</strong></p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">hexo deploy</span><br></pre></td></tr></table></figure>
+<p>简写</p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">hexo d</span><br></pre></td></tr></table></figure>
+<p><strong>缓存文件和静态文件清理</strong></p>
+<figure class="highlight bash"><table><tr><td class="code"><pre><span class="line">hexo clean</span><br></pre></td></tr></table></figure>
+<p>&nbsp;</p>
+<p><strong><em>编辑完成后需要将source分支上的markdown源码通过git提交，以免丢失。</em></strong></p>
+]]></content>
+      <categories>
+        <category>Hexo</category>
+      </categories>
+      <tags>
+        <tag>Hexo</tag>
+      </tags>
+  </entry>
+</search>
